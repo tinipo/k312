@@ -1,0 +1,121 @@
+/* Общие стили */
+body {
+  background-color: #f3f3f3;
+  color: #333;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Шапка сайта */
+.header {
+  background-color: #2d2d2d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+}
+.logo {
+  color: #fff;
+  font-size: 1.8em;
+  margin: 0;
+}
+.burger {
+  cursor: pointer;
+}
+.burger div {
+  width: 30px;
+  height: 3px;
+  background-color: #fff;
+  margin: 5px 0;
+  transition: all 0.3s ease;
+}
+
+/* Выпадающее меню */
+.nav-menu {
+  position: absolute;
+  top: 60px;
+  right: 30px;
+  background-color: #3a3a3a;
+  border-radius: 4px;
+  overflow: hidden;
+  display: none;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
+}
+.nav-menu a {
+  color: #fff;
+  padding: 12px 20px;
+  text-decoration: none;
+  display: block;
+}
+.nav-menu a:hover {
+  background-color: #575757;
+}
+
+/* Основной контент */
+.content {
+  max-width: 800px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Отображение валюты */
+.currency-display p {
+  font-size: 1.8em;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  color: #0A7E07;
+}
+
+/* Стили для списка улучшений */
+.improvements ul {
+  list-style: none;
+  padding: 0;
+}
+.improvement-item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+}
+.improvement-item:last-child {
+  border-bottom: none;
+}
+
+/* Кнопки */
+.buy-btn, .control-btn {
+  background-color: #0A7E07;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  margin-top: 5px;
+}
+.buy-btn:hover, .control-btn:hover {
+  background-color: #086105;
+}
+
+/* Плашка "можно купить xN" с тем же скруглением */
+.can-buy {
+  background-color: #0A7E07;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: default;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  margin-top: 5px;
+}
+
+/* Сообщения */
+.message {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.1em;
+}

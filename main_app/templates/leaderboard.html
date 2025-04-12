@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Лидерборд</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      margin: auto;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Лидерборд</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Место</th>
+        <th>Пользователь</th>
+        <th>Макс. перерождений</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.max_rebirths }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="text-align: center;"><a href="{{ url_for('main.index') }}">Вернуться в игру</a></p>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ppr</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* Стили для бургер-меню */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      color: #333;
+    }
+    .header {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+    .burger {
+      cursor: pointer;
+      display: inline-block;
+    }
+    .burger div {
+      width: 25px;
+      height: 3px;
+      background-color: white;
+      margin: 4px 0;
+      transition: 0.4s;
+    }
+    /* Стили для выпадающего меню */
+    .nav-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      background-color: #444;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
+      border-radius: 4px;
+      z-index: 1000;
+    }
+    .nav-menu a {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+    }
+    .nav-menu a:hover {
+      background-color: #555;
+    }
+    /* Стили для контента */
+    .content {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    .content ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .content li {
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    button {
+      padding: 6px 12px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    /* Стили для плашек */
+    .can-buy {
+      display: inline-block;
+      margin-left: 10px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .manual {
+      font-size: 0.9em;
+      color: #555;
+    }
+    /* Стили для футера (счётчик перерождений) */
+    .footer {
+      margin: 20px auto;
+      max-width: 800px;
+      padding: 10px 20px;
+      background-color: #eaeaea;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+    }
+    /* Стили для сообщения */
+    #message {
+      text-align: center;
+      font-size: 1.1em;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Шапка с бургер-меню -->
+  <div class="header">
+    <h1>ppr</h1>
+    <div class="burger" onclick="toggleMenu()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <div id="nav-menu" class="nav-menu">
+      <a href="/auth/register">Регистрация</a>
+      <a href="/leaderboard">Leaderboard</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <p>Валюта: <span id="currency">{{ game.currency }}</span></p>
+    <h2>Улучшения</h2>
+    <ul>
+      {% for imp_id, imp in game.improvements.items() %}
+      <li>
+        <strong>{{ imp.name }}</strong>
+        <br>Уровень: <span id="level-{{ imp_id }}">{{ imp.level }}</span>
+        <br>Ручных покупок: <span id="manual-{{ imp_id }}" class="manual">
+          {% if imp.upgrade_count is defined %}
+            {{ imp.upgrade_count % 10 }}
+          {% else %}
+            0
+          {% endif %}
+          /10
+        </span>
+        <br>Стоимость: <span id="cost-{{ imp_id }}">{{ imp.cost }}</span>
+        <br>Множитель: <span id="multiplier-{{ imp_id }}">{{ imp.multiplier }}</span>
+        {% if imp_id == "1" %}
+          <br>(+<span id="income-{{ imp_id }}">{{ imp.level * imp.base_income * imp.multiplier * imp.base_multiplier }}</span> валюты/сек)
+        {% endif %}
+        <br>
+        <button onclick="buyImprovement('{{ imp_id }}')">Купить {{ imp.name }}</button>
+        <span id="can-buy-{{ imp_id }}" class="can-buy">можно купить x0</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <button onclick="rebirth()">
+      Перерождение (стоимость: <span id="rebirth_cost">{{ game.rebirth_cost }}</span>
+      <span id="rebirth_diff"></span>)
+    </button>
+    <button onclick="resetProgress()">Полный ресет</button>
+  </div>
+
+  <!-- Футер: счётчик перерождений и множитель перерождений -->
+  <div class="footer">
+    Перерождений: <span id="rebirth_count">{{ game.rebirths }}</span> &nbsp;|&nbsp; Множитель перерождений: <span id="rebirth_multiplier">{{ game.improvements['1'].base_multiplier }}</span>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    // Функция для переключения видимости меню
+    function toggleMenu() {
+      const menu = document.getElementById('nav-menu');
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";
+    }
+
+    // Функция, имитирующая последовательные покупки с учетом роста цены каждые 10 покупок
+    function simulateAvailable(imp, currency) {
+      let count = 0;
+      let tempCurrency = currency;
+      let tempCost = parseFloat(imp.cost);
+      let tempUpgradeCount = imp.upgrade_count;
+      while (tempCurrency >= tempCost) {
+        tempCurrency -= tempCost;
+        count++;
+        tempUpgradeCount++;
+        if (tempUpgradeCount % 10 === 0) {
+          tempCost *= 100;
+        }
+      }
+      return count;
+    }
+
+    // Функция обновления игрового состояния
+    function updateGame() {
+      fetch('/update')
+        .then(response => response.json())
+        .then(data => {
+          // Обновляем валюту
+          document.getElementById('currency').textContent = parseFloat(data.currency).toFixed(2);
+          for (const [imp_id, imp] of Object.entries(data.improvements)) {
+            // Обновляем уровень
+            const levelElem = document.getElementById('level-' + imp_id);
+            if (levelElem) levelElem.textContent = imp.level;
+            // Обновляем ручные покупки для каждого улучшения
+            const manualElem = document.getElementById('manual-' + imp_id);
+            if (manualElem) manualElem.textContent = ` ${imp.upgrade_count % 10}/10`;
+            // Обновляем стоимость
+            const costElem = document.getElementById('cost-' + imp_id);
+            if (costElem) costElem.textContent = parseFloat(imp.cost).toFixed(2);
+            // Обновляем множитель
+            const multElem = document.getElementById('multiplier-' + imp_id);
+            if (multElem) multElem.textContent = imp.multiplier;
+            // Для генератора — обновляем доход
+            if (imp_id === "1") {
+              const income = imp.level * imp.base_income * imp.multiplier * imp.base_multiplier;
+              const incomeElem = document.getElementById('income-' + imp_id);
+              if (incomeElem) incomeElem.textContent = income.toFixed(2);
+            }
+            // Рассчитываем, сколько можно купить с учётом роста цены
+            const available = simulateAvailable(imp, data.currency);
+            const buyElem = document.getElementById('can-buy-' + imp_id);
+            if (buyElem) {
+              buyElem.textContent = `можно купить x${available}`;
+              const intensity = Math.min(available / 10, 1);
+              const red = Math.floor(128 - 128 * intensity);
+              const green = Math.floor(128 + 72 * intensity);
+              const blue = Math.floor(128 - 128 * intensity);
+              buyElem.style.backgroundColor = `rgb(${red},${green},${blue})`;
+            }
+          }
+          // Обновляем стоимость перерождения и разницу
+          const rebirthCost = parseFloat(data.rebirth_cost);
+          document.getElementById('rebirth_cost').textContent = rebirthCost.toFixed(2);
+          const currentCurrency = parseFloat(data.currency);
+          const diff = currentCurrency - rebirthCost;
+          const diffElem = document.getElementById('rebirth_diff');
+          if (diffElem) {
+            let sign = diff >= 0 ? "+" : "";
+            diffElem.textContent = " " + sign + diff.toFixed(0);
+            diffElem.style.color = diff >= 0 ? "white" : "red";
+          }
+          // Обновляем счётчик перерождений и множитель перерождений
+          document.getElementById('rebirth_count').textContent = data.rebirths;
+          // Для множителя перерождений используем базовый множитель генератора (base_multiplier)
+          document.getElementById('rebirth_multiplier').textContent = data.improvements["1"].base_multiplier;
+        })
+        .catch(err => console.error(err));
+    }
+
+    setInterval(updateGame, 1000);
+
+    function buyImprovement(impId) {
+      fetch('/buy/' + impId, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error, false);
+          } else {
+            showMessage(data.message, true);
+            updateGame();
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function rebirth() {
+      fetch('/rebirth', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            showMessage(data.error, false);
+          } else {
+            showMessage(data.message, true);
+            updateGame();
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function resetProgress() {
+      fetch('/reset', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          showMessage(data.message, true);
+          location.reload();
+        })
+        .catch(err => console.error(err));
+    }
+
+    function showMessage(msg, isSuccess) {
+      let messageDiv = document.getElementById('message');
+      messageDiv.textContent = msg;
+      messageDiv.style.color = isSuccess ? 'green' : 'red';
+      setTimeout(() => { messageDiv.textContent = ''; }, 2000);
+    }
+  </script>
+</body>
+</html>
