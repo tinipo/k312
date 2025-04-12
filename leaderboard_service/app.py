@@ -1,5 +1,5 @@
 from flask import Flask
-from leaderboard_service.config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
+from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from common.db import db
 from routes import leaderboard_bp
 

@@ -1,5 +1,5 @@
 from flask import Flask
-from main_app.config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
+from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from routes import main_bp
 
 app = Flask(__name__)
