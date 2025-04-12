@@ -7,7 +7,7 @@ from sqlalchemy import text  # Импортируем text для формиро
 # Создаём минимальное приложение Flask
 app = Flask(__name__)
 # Указываем строку подключения к базе данных; измените по необходимости
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///k312.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:844622@localhost:5432/mkrf'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Инициализируем объект SQLAlchemy

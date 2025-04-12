@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from leaderboard_service.models import User
+from models import User
 
 leaderboard_bp = Blueprint('leaderboard', __name__)
 
