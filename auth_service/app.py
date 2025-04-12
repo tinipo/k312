@@ -1,8 +1,18 @@
 from flask import Flask
-from routes import auth_blueprint  # имя должно совпадать с тем, что у тебя в routes.py
+from auth_service.config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
+from common.db import db
+from auth_service.routes import auth_bp
 
 app = Flask(__name__)
-app.register_blueprint(auth_blueprint, url_prefix='/auth')
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
+
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+
+app.register_blueprint(auth_bp, url_prefix='/auth')
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)

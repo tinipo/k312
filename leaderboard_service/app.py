@@ -12,7 +12,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-app.register_blueprint(leaderboard_bp)
+app.register_blueprint(leaderboard_bp, url_prefix='/')
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)

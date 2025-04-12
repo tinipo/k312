@@ -4,7 +4,7 @@ import time
 app = Flask(__name__)
 app.secret_key = "ваш_секретный_ключ"
 
-main_blueprint = Blueprint('main', __name__)
+main_bp = Blueprint('main', __name__)
 
 def initialize_game():
     if "game" not in session:
