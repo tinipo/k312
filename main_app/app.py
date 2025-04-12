@@ -1,6 +1,6 @@
 from flask import Flask
 from main_app.config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
-from main_app.routes import main_bp
+from routes import main_bp
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY

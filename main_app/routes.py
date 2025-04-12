@@ -1,8 +1,5 @@
-from flask import Flask, Blueprint, render_template, request, session, jsonify
+from flask import Blueprint, render_template, request, session, jsonify
 import time
-
-app = Flask(__name__)
-app.secret_key = "ваш_секретный_ключ"
 
 main_bp = Blueprint('main', __name__)
 
@@ -11,7 +8,7 @@ def initialize_game():
         session["game"] = {
             "currency": 10.0,
             "improvements": {
-                "1": {
+                "1": {  # Генератор
                     "name": "Генератор",
                     "level": 0,
                     "base_cost": 10.0,
@@ -21,7 +18,7 @@ def initialize_game():
                     "multiplier": 1.0,
                     "upgrade_count": 0
                 },
-                "2": {
+                "2": {  # Автоулучшение 1
                     "name": "Автоулучшение 1",
                     "level": 0,
                     "base_cost": 100.0,
@@ -30,7 +27,7 @@ def initialize_game():
                     "multiplier": 1.0,
                     "upgrade_count": 0
                 },
-                "3": {
+                "3": {  # Автоулучшение 2
                     "name": "Автоулучшение 2",
                     "level": 0,
                     "base_cost": 10000.0,
@@ -39,7 +36,7 @@ def initialize_game():
                     "multiplier": 1.0,
                     "upgrade_count": 0
                 },
-                "4": {
+                "4": {  # Автоулучшение 3 (покупает улучшение 3)
                     "name": "Автоулучшение 3",
                     "level": 0,
                     "base_cost": 1000000.0,
@@ -70,9 +67,11 @@ def tick_game(t=1):
     if not game:
         initialize_game()
         game = session["game"]
+
     imp1 = game["improvements"]["1"]
     if "base_multiplier" not in imp1:
         imp1["base_multiplier"] = 1.0
+
     income = imp1["level"] * imp1["base_income"] * imp1["multiplier"] * imp1["base_multiplier"] * t
     game["currency"] += income
 
@@ -81,16 +80,19 @@ def tick_game(t=1):
         auto1 = game["improvements"]["2"]
         auto2 = game["improvements"]["3"]
         auto3 = game["improvements"]["4"]
+
         game["improvements"]["1"]["level"] += auto1["level"] * intervals
+
         for _ in range(intervals):
             for _ in range(auto2["level"]):
                 game = auto_buy_improvement(game, "2")
             for _ in range(auto3["level"]):
                 game = auto_buy_improvement(game, "3")
+
     session["game"] = game
     session.modified = True
 
-@main_blueprint.route('/')
+@main_bp.route('/')
 def index():
     initialize_game()
     now = time.time()
@@ -102,7 +104,7 @@ def index():
     session["game"] = game
     return render_template('index.html', game=game)
 
-@main_blueprint.route('/update', methods=['GET'])
+@main_bp.route('/update', methods=['GET'])
 def update():
     initialize_game()
     now = time.time()
@@ -119,7 +121,7 @@ def update():
         "rebirth_cost": game["rebirth_cost"]
     })
 
-@main_blueprint.route('/buy/<imp_id>', methods=['POST'])
+@main_bp.route('/buy/<imp_id>', methods=['POST'])
 def buy_improvement(imp_id):
     initialize_game()
     game = session.get("game")
@@ -144,7 +146,7 @@ def buy_improvement(imp_id):
         "improvement": imp
     })
 
-@main_blueprint.route('/rebirth', methods=['POST'])
+@main_bp.route('/rebirth', methods=['POST'])
 def rebirth():
     initialize_game()
     game = session["game"]
@@ -171,13 +173,8 @@ def rebirth():
         "game": game
     })
 
-@main_blueprint.route('/reset', methods=['POST'])
+@main_bp.route('/reset', methods=['POST'])
 def reset():
     session.pop("game", None)
     initialize_game()
     return jsonify({"message": "Прогресс полностью сброшен."})
-
-app.register_blueprint(main_blueprint)
-
-if __name__ == '__main__':
-    app.run(port=5000, debug=True)
